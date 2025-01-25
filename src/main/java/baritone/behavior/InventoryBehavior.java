@@ -159,33 +159,48 @@ public final class InventoryBehavior extends Behavior implements Helper {
     }
 
     public boolean hasGenericThrowaway() {
-        for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
-            if (throwaway(false, stack -> item.equals(stack.getItem()))) {
-                return true;
-            }
-        }
-        return false;
+    // ADD THIS LINE TO BYPASS INVENTORY CHECKS IN CREATIVE MODE
+    if (ctx.player().isCreative()) {
+        return true;
     }
-
-    public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
-        BlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z, baritone.bsi.get0(x, y, z));
-        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof BlockItem && maybe.equals(((BlockItem) stack.getItem()).getBlock().getStateForPlacement(new BlockPlaceContext(new UseOnContext(ctx.world(), ctx.player(), InteractionHand.MAIN_HAND, stack, new BlockHitResult(new Vec3(ctx.player().position().x, ctx.player().position().y, ctx.player().position().z), Direction.UP, ctx.playerFeet(), false)) {}))))) {
-            return true; // gotem
-        }
-        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof BlockItem && ((BlockItem) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
+    for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
+        if (throwaway(false, stack -> item.equals(stack.getItem()))) {
             return true;
         }
-        for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
-            if (throwaway(select, stack -> item.equals(stack.getItem()))) {
-                return true;
-            }
-        }
-        return false;
     }
+    return false;
+}
+   public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
+    // START MODIFICATION - Bypass inventory checks in Creative mode
+    if (ctx.player().isCreative()) {
+        return true;
+    }
+    // END MODIFICATION
 
-    public boolean throwaway(boolean select, Predicate<? super ItemStack> desired) {
-        return throwaway(select, desired, Baritone.settings().allowInventory.value);
+    BlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z, baritone.bsi.get0(x, y, z));
+    if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof BlockItem && maybe.equals(((BlockItem) stack.getItem()).getBlock().getStateForPlacement(new BlockPlaceContext(new UseOnContext(ctx.world(), ctx.player(), InteractionHand.MAIN_HAND, stack, new BlockHitResult(new Vec3(ctx.player().position().x, ctx.player().position().y, ctx.player().position().z), Direction.UP, ctx.playerFeet(), false)) {}))))) {
+        return true;
     }
+    if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof BlockItem && ((BlockItem) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
+        return true;
+    }
+    for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
+        if (throwaway(select, stack -> item.equals(stack.getItem()))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+public boolean throwaway(boolean select, Predicate<? super ItemStack> desired, boolean allowInventory) {
+    // ADD THIS LINE TO BYPASS INVENTORY CHECKS IN CREATIVE MODE
+    if (ctx.player().isCreative()) {
+        return true;
+    }
+    LocalPlayer p = ctx.player();
+    NonNullList<ItemStack> inv = p.getInventory().items;
+    // ... rest of the method (leave unchanged)
+}
 
     public boolean throwaway(boolean select, Predicate<? super ItemStack> desired, boolean allowInventory) {
         LocalPlayer p = ctx.player();
